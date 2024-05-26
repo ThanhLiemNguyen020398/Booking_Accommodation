@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Booking_Accommodation", "Booking_Accommodation\Booking_Accommodation.csproj", "{02DFCE9E-4EA8-4F7F-9794-8FFC3AB91440}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_Booking_Accommodation", "Test_Booking_Accommodation\Test_Booking_Accommodation.csproj", "{6E8D3873-96B9-4A58-840D-AB540D35DE31}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{02DFCE9E-4EA8-4F7F-9794-8FFC3AB91440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02DFCE9E-4EA8-4F7F-9794-8FFC3AB91440}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02DFCE9E-4EA8-4F7F-9794-8FFC3AB91440}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02DFCE9E-4EA8-4F7F-9794-8FFC3AB91440}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E8D3873-96B9-4A58-840D-AB540D35DE31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E8D3873-96B9-4A58-840D-AB540D35DE31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E8D3873-96B9-4A58-840D-AB540D35DE31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E8D3873-96B9-4A58-840D-AB540D35DE31}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B1B914F1-202F-4621-AD77-A8ABF668FE90}
+	EndGlobalSection
+EndGlobal
