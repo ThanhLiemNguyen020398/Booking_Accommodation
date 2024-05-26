@@ -108,7 +108,7 @@ namespace Booking_Accomodation
     public class CommonAccommodation : Accommodation
     {
 
-        public static List<Room> listRoom = new List<Room> { };
+        public List<Room> listRoom { get; set; }  = new List<Room> { };
         private float _rate;
         public float Rate { get { return _rate; } set { } }
         public CommonAccommodation(int ID, string name, string location, string city, List<Room> ListRoom, float rate)
@@ -122,6 +122,11 @@ namespace Booking_Accomodation
         {
             _rate = rate;
         }
+
+        public void AddRoom(Room room)
+        {
+             listRoom.Add(room);
+        }
     }
     public class Resort : CommonAccommodation
     {
@@ -132,7 +137,7 @@ namespace Booking_Accomodation
         public bool HaveSwimmingPool { get { return _HaveSwimmingPool; } set { } }
 
         public Resort(int iD, string name, string location, string city, List<Room> rooms, float rate, bool pool, float star)
-            : base(iD, name, location, city, listRoom, rate)
+            : base(iD, name, location, city, rooms, rate)
         {
             _Star = star;
             _HaveSwimmingPool = pool;
@@ -254,67 +259,112 @@ namespace Booking_Accomodation
         public List<Reservation> Reservations = new List<Reservation>();
         public List<Room> Rooms = new List<Room>();
 
-        public ReservationSystem(string filePath)
-        {
-            LoadAccommodations(filePath);
+        public ReservationSystem(string accPath, string roomPath, string roomOfAccPath)
+        { 
+            LoadAccommodations(accPath, roomPath, roomOfAccPath);
         }
 
-        public List<Accommodation> LoadAccommodations(string filePath)
+        public List<Accommodation> LoadAccommodations(string accPath, string roomPath, string roomOfAccPath)
         {
-            string[] lines = File.ReadAllLines(filePath);
-            foreach (string line in lines)
+            Dictionary<int, Accommodation> accommodationMap = new Dictionary<int, Accommodation>();
+            Dictionary<int, Room> roomMap = new Dictionary<int, Room>();
+
+            using (StreamReader sr = new StreamReader(accPath))
             {
-                string[] parts = line.Split(',');
-                int id = int.Parse(parts[0].Trim());
-                string name = parts[1].Trim();
-                string location = parts[2].Trim();
-                string city = parts[3].Trim();
-
-                if (parts.Length == 5)
+                string[] lines = File.ReadAllLines(accPath);
+                foreach (string line in lines)
                 {
-                    float rate = float.Parse(parts[4].Trim());
-                    Accommodations.Add(new Homestay(id, name, location, city, rate));
+                    string[] parts = line.Split(',');
+                    int id = int.Parse(parts[0].Trim());
+                    string name = parts[1].Trim();
+                    string location = parts[2].Trim();
+                    string city = parts[3].Trim();
+
+                    if (parts.Length == 5)
+                    {
+                        float rate = float.Parse(parts[4].Trim());
+                        accommodationMap[id] = new Homestay(id, name, location, city, rate);
+                    }
+                    else if (parts.Length == 6)
+                    {
+                        double quality = double.Parse(parts[5].Trim());
+                        float rate = float.Parse(parts[4].Trim());
+                        accommodationMap[id] = new Hotel(id, name, location, city, rate, quality);
+                    }
+                    else if (parts.Length == 7)
+                    {
+
+                        float rate = float.Parse(parts[4].Trim());
+                        float star = float.Parse(parts[6].Trim());
+                        bool swimmingPool = parts[5].Trim().ToLower() == "yes";
+
+                        accommodationMap[id] = new Resort(id, name, location, city, rate, swimmingPool, star);
+
+                    }
+                    else if (parts.Length == 10)
+                    {
+                        bool privatePool = parts[4].Trim().ToLower() == "yes";
+                        bool welcomeDrink = parts[5].Trim().ToLower() == "yes";
+                        bool freeBreakfast = parts[6].Trim().ToLower() == "yes";
+                        bool gym = parts[7].Trim().ToLower() == "yes";
+                        int maxPeople = int.Parse(parts[8].Trim());
+                        int cost = int.Parse(parts[9].Trim());
+                        accommodationMap[id] = new Villa(id, name, location, city, privatePool, welcomeDrink, freeBreakfast, gym, maxPeople, cost);
+                    }
+                    else if (parts.Length == 11)
+                    {
+                        bool privateBar = parts[4].Trim().ToLower() == "yes";
+
+                        bool privatePool = parts[5].Trim().ToLower() == "yes";
+                        bool welcomeDrink = parts[6].Trim().ToLower() == "yes";
+                        bool freeBreakfast = parts[7].Trim().ToLower() == "yes";
+                        bool gym = parts[8].Trim().ToLower() == "yes";
+                        int maxPeople = int.Parse(parts[9].Trim());
+                        int cost = int.Parse(parts[10].Trim());
+                        accommodationMap[id] = new CruiseShip(id, name, location, city, privateBar, privatePool, welcomeDrink, freeBreakfast, gym, maxPeople, cost);
+                    }
                 }
-                else if (parts.Length == 6)
+            }
+            using (StreamReader reader = new StreamReader(roomPath))
                 {
-                    double quality = double.Parse(parts[5].Trim());
-                    float rate = float.Parse(parts[4].Trim());
-                    Accommodations.Add(new Hotel(id, name, location, city, rate, quality));
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        var parts = line.Split(',');
+                        int id = int.Parse(parts[0].Trim());
+                        string roomName = parts[1].Trim();
+                        int floor = int.Parse(parts[2].Trim());
+                        string roomType = parts[3].Trim();
+                        int bedCount = int.Parse(parts[4].Trim());
+                        int capacity = int.Parse(parts[5].Trim());
+                        double area = double.Parse(parts[6].Trim());
+                        int cost = int.Parse(parts[7].Trim());
+
+                        roomMap[id] = new Room(id, roomName, floor, roomType, bedCount, capacity, area, cost);
+                    }
                 }
-                else if (parts.Length == 7)
-                {
+            using (StreamReader reader = new StreamReader(roomOfAccPath))
+            {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        var parts = line.Split(',');
+                        int accId = int.Parse(parts[0].Trim());
+                        int roomId = int.Parse(parts[1].Trim());
 
-                    float rate = float.Parse(parts[4].Trim());
-                    float star = float.Parse(parts[6].Trim());
-                    bool swimmingPool = parts[5].Trim().ToLower() == "yes";
+                    if (accommodationMap.ContainsKey(accId) && roomMap.ContainsKey(roomId))
+                    {
+                        CommonAccommodation accommodation = (CommonAccommodation) accommodationMap[accId];
+                        Room room = roomMap[roomId];
 
-                    Accommodations.Add(new Resort(id, name, location, city, rate, swimmingPool, star));
-
-                }
-                else if (parts.Length == 10)
-                {
-                    bool privatePool = parts[4].Trim().ToLower() == "yes";
-                    bool welcomeDrink = parts[5].Trim().ToLower() == "yes";
-                    bool freeBreakfast = parts[6].Trim().ToLower() == "yes";
-                    bool gym = parts[7].Trim().ToLower() == "yes";
-                    int maxPeople = int.Parse(parts[8].Trim());
-                    int cost = int.Parse(parts[9].Trim());
-                    Accommodations.Add(new Villa(id, name, location, city, privatePool, welcomeDrink, freeBreakfast, gym, maxPeople, cost));
-                }
-                else if (parts.Length == 11)
-                {
-                    bool privateBar = parts[4].Trim().ToLower() == "yes";
-
-                    bool privatePool = parts[5].Trim().ToLower() == "yes";
-                    bool welcomeDrink = parts[6].Trim().ToLower() == "yes";
-                    bool freeBreakfast = parts[7].Trim().ToLower() == "yes";
-                    bool gym = parts[8].Trim().ToLower() == "yes";
-                    int maxPeople = int.Parse(parts[9].Trim());
-                    int cost = int.Parse(parts[10].Trim());
-                    Accommodations.Add(new CruiseShip(id, name, location, city, privateBar, privatePool, welcomeDrink, freeBreakfast, gym, maxPeople, cost));
+                        accommodation.listRoom.Add(room);
+                       
+                       
+                    }
                 }
             }
             return Accommodations;
+
         }
         public void SaveAccommodations(string filePath)
         {
@@ -326,6 +376,7 @@ namespace Booking_Accomodation
                 }
             }
         }
+
         
     }
 }
@@ -333,14 +384,16 @@ public class Program
 {
     static void Main(string[] args)
     {
-        ReservationSystem reservationSystem = new ReservationSystem("accommodation.csv");
-        var accommodations = reservationSystem.LoadAccommodations("accommodation.csv");
+        ReservationSystem reservationSystem = new ReservationSystem("accommodation.csv", "room_type.csv", "room_in_accommodation.csv");
+        var accommodations = reservationSystem.LoadAccommodations("accommodation.csv", "room_type.csv", "room_in_accommodation.csv");
+
 
         foreach (var accommodation in accommodations)
         {
-            Console.WriteLine(accommodation);
+            if (accommodation is CommonAccommodation)
+                Console.WriteLine(((CommonAccommodation)accommodation).listRoom.Count);
         }
-       
+        
 
         Console.ReadLine();
     }
