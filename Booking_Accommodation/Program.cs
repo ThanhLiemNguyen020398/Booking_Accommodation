@@ -259,10 +259,7 @@ namespace Booking_Accomodation
         public List<Reservation> Reservations = new List<Reservation>();
         public List<Room> Rooms = new List<Room>();
 
-        public ReservationSystem(string accPath, string roomPath, string roomOfAccPath)
-        { 
-            LoadAccommodations(accPath, roomPath, roomOfAccPath);
-        }
+        public ReservationSystem() { }
 
         public List<Accommodation> LoadAccommodations(string accPath, string roomPath, string roomOfAccPath)
         {
@@ -363,6 +360,17 @@ namespace Booking_Accomodation
                     }
                 }
             }
+
+            foreach (var accommodation in accommodationMap.Values)
+            {
+                Accommodations.Add(accommodation);
+            }
+
+            foreach (var room in roomMap.Values)
+            {
+                Rooms.Add(room);
+            }
+
             return Accommodations;
 
         }
@@ -384,7 +392,7 @@ public class Program
 {
     static void Main(string[] args)
     {
-        ReservationSystem reservationSystem = new ReservationSystem("accommodation.csv", "room_type.csv", "room_in_accommodation.csv");
+        ReservationSystem reservationSystem = new ReservationSystem();
         var accommodations = reservationSystem.LoadAccommodations("accommodation.csv", "room_type.csv", "room_in_accommodation.csv");
 
 
