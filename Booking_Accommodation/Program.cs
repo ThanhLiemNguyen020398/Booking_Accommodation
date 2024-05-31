@@ -384,8 +384,38 @@ namespace Booking_Accomodation
                 }
             }
         }
+        public List<Accommodation> SearchForRoom(string city, int numOfPeople)
+        {
+            List<Accommodation> results = new List<Accommodation>();
 
-        
+            foreach (var accommodation in Accommodations)
+            {
+                if (accommodation.City == city)
+                {
+                    CommonAccommodation commonAcc = accommodation as CommonAccommodation;
+                    if (commonAcc != null)
+                    {
+                        foreach (var room in commonAcc.listRoom)
+                        {
+                            if (room.MaxPeople >= numOfPeople)
+                            {
+                                results.Add(accommodation);
+                                break;
+                            }
+                        }
+                    }
+                    else if (accommodation is LuxuryAccommodation luxuryAcc && luxuryAcc.MaxPeople >= numOfPeople)
+                    {
+                        results.Add(accommodation);
+                    }
+                }
+            }
+            if(results.Count == 0) Console.WriteLine("Tim Kiem Khong Hop Le");
+            return results;
+        }
+
+
+
     }
 }
 public class Program
@@ -395,13 +425,14 @@ public class Program
         ReservationSystem reservationSystem = new ReservationSystem();
         var accommodations = reservationSystem.LoadAccommodations("accommodation.csv", "room_type.csv", "room_in_accommodation.csv");
 
+  
+        List<Accommodation> req2_1 = reservationSystem.SearchForRoom("City B", 1);
+        //List<Accommodation> req2_2 = reservationSystem.SearchForRoom("City B", 11);
 
-        foreach (var accommodation in accommodations)
+        foreach (var accommodation in req2_1)
         {
-            if (accommodation is CommonAccommodation)
-                Console.WriteLine(((CommonAccommodation)accommodation).listRoom.Count);
+            Console.WriteLine(accommodation.ToString());
         }
-        
 
         Console.ReadLine();
     }
