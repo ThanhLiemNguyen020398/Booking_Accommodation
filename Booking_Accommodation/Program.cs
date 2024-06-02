@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.IO;
 using Booking_Accomodation;
+using System.Collections;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Booking_Accomodation
 {
@@ -89,7 +91,7 @@ namespace Booking_Accomodation
         public int roomId { get { return _roomId; } }
         public DateTime checkin { get { return _checkin; } }
         public DateTime checkout { get { return _checkout; } }
-        public Reservation(int reservationId, int accId, int _roomId, DateTime checkin, DateTime checkout)
+        public Reservation(int reservationId, int accId, int? _roomId, DateTime checkin, DateTime checkout)
         {
             _reservationId = reservationId;
             _accId = accId;
@@ -413,9 +415,83 @@ namespace Booking_Accomodation
             if(results.Count == 0) Console.WriteLine("Tim Kiem Khong Hop Le");
             return results;
         }
+        public List<Accommodation> SearchForRoomByRange(string reservationPath, double priceFrom, double priceTo, DateTime checkin, DateTime checkout, string city, int numOfPeople)
+        {
+            List<Reservation> reservations = new List<Reservation>();
+            using (StreamReader reader = new StreamReader(reservationPath))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var parts = line.Split(',');
 
+                    int reservationId = int.Parse(parts[0].Trim());
+                    int accId = int.Parse(parts[1].Trim());
+                    int? roomId = null;
 
+                    if (parts.Length > 4)
+                    {
+                        // Dành cho các dịch vụ lưu trú thông thường có roomId
+                        roomId = int.Parse(parts[2].Trim());
+                    }
 
+                    DateTime resCheckin = DateTimeOffset.FromUnixTimeSeconds(long.Parse(parts[parts.Length - 2].Trim())).DateTime;
+                    DateTime resCheckout = DateTimeOffset.FromUnixTimeSeconds(long.Parse(parts[parts.Length - 1].Trim())).DateTime;
+
+                    reservations.Add(new Reservation(reservationId, accId, roomId, resCheckin, resCheckout));
+                }
+            }
+            List<Accommodation> results = new List<Accommodation>();
+            foreach (var accommodation in Accommodations)
+            {
+                if (accommodation.City == city)
+                {
+                    if (accommodation is CommonAccommodation commonAcc)
+                    {
+                        foreach (var room in commonAcc.listRoom)
+                        {
+                            if (room.Price >= priceFrom && room.Price <= priceTo && room.MaxPeople >= numOfPeople)
+                            {
+                                bool isAvailable = true;
+                                foreach (var reservation in reservations)
+                                {
+                                    if (reservation.accId == accommodation.ID && reservation.roomId == room.ID &&
+                                        !(checkout <= reservation.checkin || checkin >= reservation.checkout))
+                                    {
+                                        isAvailable = false;
+                                        break;
+                                    }
+                                }
+                                if (isAvailable)
+                                {
+                                    results.Add(accommodation);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (accommodation is LuxuryAccommodation luxuryAcc && luxuryAcc.Cost >= priceFrom && luxuryAcc.Cost <= priceTo && luxuryAcc.MaxPeople >= numOfPeople)
+                    {
+                        bool isAvailable = true;
+                        foreach (var reservation in reservations)
+                        {
+                            if (reservation.accId == accommodation.ID &&
+                                !(checkout <= reservation.checkin || checkin >= reservation.checkout))
+                            {
+                                isAvailable = false;
+                                break;
+                            }
+                        }
+                        if (isAvailable)
+                        {
+                            results.Add(accommodation);
+                        }
+                    }
+                }
+            }
+            if (results.Count == 0) Console.WriteLine("Tim Kiem Khong Hop Le");
+            return results;
+        }
     }
 }
 public class Program
@@ -425,11 +501,18 @@ public class Program
         ReservationSystem reservationSystem = new ReservationSystem();
         var accommodations = reservationSystem.LoadAccommodations("accommodation.csv", "room_type.csv", "room_in_accommodation.csv");
 
-  
-        List<Accommodation> req2_1 = reservationSystem.SearchForRoom("City B", 1);
-        //List<Accommodation> req2_2 = reservationSystem.SearchForRoom("City B", 11);
 
-        foreach (var accommodation in req2_1)
+        //List<Accommodation> req2_1 = reservationSystem.SearchForRoom("City 0", 1);
+        //List<Accommodation> req2_2 = reservationSystem.SearchForRoom("City B", 11);
+        DateTime checkin = DateTimeOffset.FromUnixTimeSeconds(1713512750).DateTime;
+        DateTime checkout = DateTimeOffset.FromUnixTimeSeconds(1713771950).DateTime;
+
+        List<Accommodation> req3_1 = reservationSystem.SearchForRoomByRange("data/reservation_3.csv", 10,
+                            3000,
+                            checkin, checkout, "City H", 1);
+
+        
+        foreach (var accommodation in req3_1)
         {
             Console.WriteLine(accommodation.ToString());
         }
